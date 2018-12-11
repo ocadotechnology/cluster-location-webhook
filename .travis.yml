@@ -1,0 +1,24 @@
+language: python
+dist: xenial
+python:
+- '3.7'
+sudo: required
+services:
+- docker
+env:
+  global:
+  - REGISTRY_USER=ocadotechnologygitlab
+  - VCS_SOURCE="https://github.com/${TRAVIS_REPO_SLUG}"
+  - secure: "ftXHLw88nByCn2JsxMPcMq3dV8mPO+9Z1i53u/d0KcKxq4zZWb/LyBdocK/ZodAz4fNqAxXsPvC4Q5opU+UgDftlIYcZYvJmorq1kVdwk5thZb4kOj+eAheJy93M3HQbZKOVFO4vrSg6SGafVYthfznm82Qu1HGWdZr/BZHub/JsFBtToHrkS+PlT97Q+gi4H+D15PFz4lbcKiWDSqR5Zj+fGq/5mAiu1QyovCR3j6eL+lX6hOzmaLzdHvqngScNP1dEMaS9fH2WjwxpxlUFFrRm60j+HowuOSSmwKDX645tHpgTJ488RGNntGYPfE2b1cSmmpXmnUq2W1cuvToXwDVaXeF7mKPGvKoXm4SNLhvk2uvpN76qnoNf5TmhEoGf5dIiH1HVlEPQYXHKV/D3QZcEbdhQTeY338R3QhaPpb6RxYYgoqPozSWWfwT4Bt+H8vT3tZjtRD4MGE7VeEWgwH0P+9nuU0B1yn7Cu4zpAd3soMnG1CRv58gPVWiQvw0+C6kQDWCRDI/+JqIc2jcUh+q7taIms3wBbl2AC04tKPaAHocfwuGFWUgsZCM7jZERl8iOyW6UZX4Laz0d/OUDaq33hIBlhPIEbcQoTyInKuN7k0ofcqyHX8tkyBiJElrCFTiaDuwVseDxb6enPVbEhbd7uuCZa7hT3afB3v3SGRc="
+script:
+- pip install -r requirements.txt
+- python ./test.py
+- ./.travis/docker-build.sh
+after_script:
+- docker images
+deploy:
+  provider: script
+  script: ./.travis/docker-push.sh
+  on:
+    tags: true
+    branch: master
