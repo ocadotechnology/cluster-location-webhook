@@ -1,0 +1,123 @@
+{
+  "kind": "AdmissionReview",
+  "apiVersion": "admission.k8s.io/v1beta1",
+  "request": {
+    "uid": "64bcda5e-f304-11e8-8699-fa163e69c69a",
+    "kind": {
+      "group": "",
+      "version": "v1",
+      "kind": "Pod"
+    },
+    "resource": {
+      "group": "",
+      "version": "v1",
+      "resource": "pods"
+    },
+    "namespace": "kube-scheduler-healthcheck",
+    "operation": "CREATE",
+    "userInfo": {
+      "username": "system:serviceaccount:kube-system:kube-scheduler",
+      "uid": "f4f2eff5-d7a9-11e8-8ae4-fa163e11faac",
+      "groups": [
+        "system:serviceaccounts",
+        "system:serviceaccounts:kube-system",
+        "system:authenticated"
+      ]
+    },
+    "object": {
+      "metadata": {
+        "name": "scheduler-healthcheck-kube-scheduler-84ccd74b-f8bl5-1543406076",
+        "namespace": "kube-scheduler-healthcheck",
+        "creationTimestamp": null,
+        "labels": {
+          "app": "scheduler-healthcheck-test-pod",
+          "postfix": "kube-scheduler-84ccd74b-f8bl5"
+        },
+        "ownerReferences": [
+          {
+            "apiVersion": "v1",
+            "kind": "Pod",
+            "name": "kube-scheduler-84ccd74b-f8bl5",
+            "uid": "519591e0-f170-11e8-8f23-fa163e6f6b5a",
+            "controller": true
+          }
+        ]
+      },
+      "spec": {
+        "volumes": [
+          {
+            "name": "default-token-cpgzn",
+            "secret": {
+              "secretName": "default-token-cpgzn"
+            }
+          }
+        ],
+        "containers": [
+          {
+            "name": "pause",
+            "image": "gcr.io/google_containers/pause:3.1",
+            "resources": {},
+            "volumeMounts": [
+              {
+                "name": "default-token-cpgzn",
+                "readOnly": true,
+                "mountPath": "/var/run/secrets/kubernetes.io/serviceaccount"
+              }
+            ],
+            "terminationMessagePath": "/dev/termination-log",
+            "terminationMessagePolicy": "File",
+            "imagePullPolicy": "IfNotPresent"
+          }
+        ],
+        "restartPolicy": "Always",
+        "terminationGracePeriodSeconds": 30,
+        "dnsPolicy": "ClusterFirst",
+        "serviceAccountName": "default",
+        "serviceAccount": "default",
+        "securityContext": {},
+        "imagePullSecrets": [
+          {
+            "name": "some-secret"
+          }
+        ],
+        "affinity": {
+          "podAntiAffinity": {
+            "requiredDuringSchedulingIgnoredDuringExecution": [
+              {
+                "labelSelector": {
+                  "matchExpressions": [
+                    {
+                      "key": "app",
+                      "operator": "In",
+                      "values": [
+                        "scheduler-healthcheck-test-pod"
+                      ]
+                    }
+                  ]
+                },
+                "topologyKey": "failure-domain.beta.kubernetes.io/zone"
+              }
+            ]
+          }
+        },
+        "schedulerName": "default-scheduler",
+        "tolerations": [
+          {
+            "key": "node.kubernetes.io/not-ready",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          },
+          {
+            "key": "node.kubernetes.io/unreachable",
+            "operator": "Exists",
+            "effect": "NoExecute",
+            "tolerationSeconds": 300
+          }
+        ]
+      },
+      "status": {}
+    },
+    "oldObject": null
+  }
+}

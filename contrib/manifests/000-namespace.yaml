@@ -1,0 +1,10 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: clusterlocationwebhook
+  annotations:
+    k8s.osp.tech/impact-severity: "Minor"
+    k8s.osp.tech/impact-description: "Restarting this application will have no impact on operations"
+  labels:
+    appId: clusterlocationwebhook
