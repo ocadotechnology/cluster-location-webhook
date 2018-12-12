@@ -21,8 +21,10 @@ if not isinstance(numeric_level, int):
     raise ValueError('Invalid LOG_LEVEL: %s' % LOG_LEVEL)
 logging.basicConfig(level=numeric_level)
 
-REQUESTS = Counter('webhook_request_total', 'webhooks requests.', ['path', 'method'])
-LATENCY = Histogram('webhook_request_latency_seconds', 'Time for a request webhook.', ['path', 'method'])
+REQUESTS = Counter('webhook_request_total',
+                   'webhooks requests.', ['path', 'method'])
+LATENCY = Histogram('webhook_request_latency_seconds',
+                    'Time for a request webhook.', ['path', 'method'])
 
 
 def request_metrics(func):
@@ -38,7 +40,8 @@ class Webhook(BaseHTTPRequestHandler):
     patch_content = [{'op': 'add',
                       'path': '/metadata/labels/' + CLUSTER_LOCATION_LABEL,
                       'value': CLUSTER_LOCATION}]
-    patch = base64.b64encode(json.dumps(patch_content).encode('utf-8')).decode()
+    patch = base64.b64encode(json.dumps(
+        patch_content).encode('utf-8')).decode()
 
     def _build_response(self, uid, labels):
         response = {
@@ -79,7 +82,8 @@ class Webhook(BaseHTTPRequestHandler):
             self.send_error(HTTPStatus.BAD_REQUEST, "Not an AdmissionReview")
             return
         uid = recieved.get('request')['uid']
-        labels = recieved.get('request', {}).get('object', {}).get('metadata', {}).get('labels', {})
+        labels = recieved.get('request', {}).get(
+            'object', {}).get('metadata', {}).get('labels', {})
         self._send_json(self._build_response(uid, labels))
 
     @request_metrics
@@ -107,9 +111,11 @@ def run():
     if os.path.isfile(CERT_PATH) and os.path.isfile(KEY_PATH):
         logging.info('using tls cert at '+CERT_PATH)
         logging.info('using tls key at '+KEY_PATH)
-        httpd.socket = ssl.wrap_socket(httpd.socket, certfile=CERT_PATH, keyfile=KEY_PATH, server_side=True)
+        httpd.socket = ssl.wrap_socket(
+            httpd.socket, certfile=CERT_PATH, keyfile=KEY_PATH, server_side=True)
     logging.info('starting on 8080...')
     httpd.serve_forever()
+
 
 if __name__ == '__main__':
     run()
