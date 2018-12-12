@@ -35,10 +35,15 @@ def request_metrics(func):
     return wrapper
 
 
+def safe_json_patch_key(key):
+    ''' see https://tools.ietf.org/html/rfc6901#section-3 '''
+    return key.replace('/', '~1')
+
+
 class Webhook(BaseHTTPRequestHandler):
     # build the JSONPatch once rather than every request as it won't change
     patch_content = [{'op': 'add',
-                      'path': '/metadata/labels/' + CLUSTER_LOCATION_LABEL,
+                      'path': '/metadata/labels/' + safe_json_patch_key(CLUSTER_LOCATION_LABEL),
                       'value': CLUSTER_LOCATION}]
     patch = base64.b64encode(json.dumps(
         patch_content).encode('utf-8')).decode()
