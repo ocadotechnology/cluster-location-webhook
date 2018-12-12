@@ -83,6 +83,16 @@ class HTTPRequestHandlerTestCase(unittest.TestCase):
         )
         req.close()
 
+    def test_good_put_patch(self):
+        req = open("contrib/request.txt", "rb")
+        resp = open("contrib/response.txt", "rb")
+        self.assertIn(
+            resp.read(),
+            self._test(MockPUTRequest(b'/mutate', req.read()))
+        )
+        req.close()
+        resp.close()
+
     def test_bad_put(self):
         self.assertIn(
             b'400 Not an AdmissionReview',
