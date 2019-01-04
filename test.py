@@ -6,20 +6,22 @@ try:
     from io import BytesIO as IO
 except ImportError:
     from StringIO import StringIO as IO
+import base64
+import json
+import jsonpatch
 from hook import Webhook  # My BaseHTTPRequestHandler child
 
 
 class TestableHandler(Webhook):
-    # On Python3, in socketserver.StreamRequestHandler, if this is
-    # set it will use makefile() to produce the output stream. Otherwise,
-    # it will use socketserver._SocketWriter, and we won't be able to get
-    # to the data
-    wbufsize = 1
+    def setup(self):
+        super().setup()
+        self.wfile = IO()
 
     def finish(self):
         # Do not close self.wfile, so we can read its value
         self.wfile.flush()
-        self.rfile.close()
+        self.final_value = self.wfile.getvalue()
+        super().finish()
 
     def date_time_string(self, timestamp=None):
         """ Mocked date time string """
@@ -61,7 +63,7 @@ class HTTPRequestHandlerTestCase(unittest.TestCase):
 
     def _test(self, request):
         handler = TestableHandler(request, (0, 0), None)
-        return handler.wfile.getvalue()
+        return handler.final_value
 
     def test_get(self):
         self.assertIn(
@@ -91,6 +93,10 @@ class HTTPRequestHandlerTestCase(unittest.TestCase):
             desired_resp,
             resp,
         )
+        resp_patch = base64.b64decode(json.loads(resp[resp.find(b'{'):])['response']['patch'])
+        req_object = json.loads(req)['request']['object']
+        jsonpatch.apply_patch(req_object, resp_patch)
+
 
     def test_bad_put(self):
         self.assertIn(
