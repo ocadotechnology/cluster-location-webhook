@@ -84,14 +84,13 @@ class HTTPRequestHandlerTestCase(unittest.TestCase):
         req.close()
 
     def test_good_put_patch(self):
-        req = open("contrib/request.txt", "rb")
-        resp = open("contrib/response.txt", "rb")
+        req = open("contrib/request.txt", "rb").read()
+        desired_resp = open("contrib/response.txt", "rb").read()
+        resp = self._test(MockPUTRequest(b'/mutate', req))
         self.assertIn(
-            resp.read(),
-            self._test(MockPUTRequest(b'/mutate', req.read()))
+            desired_resp,
+            resp,
         )
-        req.close()
-        resp.close()
 
     def test_bad_put(self):
         self.assertIn(
