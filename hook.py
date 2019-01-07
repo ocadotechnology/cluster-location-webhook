@@ -42,11 +42,7 @@ def safe_json_patch_key(key):
 
 class Webhook(BaseHTTPRequestHandler):
     # build the JSONPatch once rather than every request as it won't change
-    patch_content = [{'op': 'add',
-                      'path': '/metadata/labels/' + safe_json_patch_key(CLUSTER_LOCATION_LABEL),
-                      'value': CLUSTER_LOCATION}]
-    patch = base64.b64encode(json.dumps(
-        patch_content).encode('utf-8')).decode()
+
 
     def _build_response(self, uid, labels):
         response = {
@@ -58,7 +54,27 @@ class Webhook(BaseHTTPRequestHandler):
             }
         }
         if IGNORE_WITH_LABEL not in labels:
-            response['response']['patch'] = self.patch
+            if labels:
+                patch_content = [
+                    {
+                        'op': 'add',
+                        'path': '/metadata/labels/' + safe_json_patch_key(CLUSTER_LOCATION_LABEL),
+                        'value': CLUSTER_LOCATION,
+                    },
+                ]
+            else:
+                patch_content = [
+                    {
+                        'op': 'add',
+                        'path': '/metadata/labels',
+                        'value': {
+                            CLUSTER_LOCATION_LABEL: CLUSTER_LOCATION,
+                        },
+                    },
+                ]
+            patch = base64.b64encode(json.dumps(
+                patch_content).encode('utf-8')).decode()
+            response['response']['patch'] = patch
         return response
 
     def _send_json(self, data):

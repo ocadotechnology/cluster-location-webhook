@@ -6,20 +6,22 @@ try:
     from io import BytesIO as IO
 except ImportError:
     from StringIO import StringIO as IO
+import base64
+import json
+import jsonpatch
 from hook import Webhook  # My BaseHTTPRequestHandler child
 
 
 class TestableHandler(Webhook):
-    # On Python3, in socketserver.StreamRequestHandler, if this is
-    # set it will use makefile() to produce the output stream. Otherwise,
-    # it will use socketserver._SocketWriter, and we won't be able to get
-    # to the data
-    wbufsize = 1
+    def setup(self):
+        super().setup()
+        self.wfile = IO()
 
     def finish(self):
         # Do not close self.wfile, so we can read its value
         self.wfile.flush()
-        self.rfile.close()
+        self.final_value = self.wfile.getvalue()
+        super().finish()
 
     def date_time_string(self, timestamp=None):
         """ Mocked date time string """
@@ -61,7 +63,7 @@ class HTTPRequestHandlerTestCase(unittest.TestCase):
 
     def _test(self, request):
         handler = TestableHandler(request, (0, 0), None)
-        return handler.wfile.getvalue()
+        return handler.final_value
 
     def test_get(self):
         self.assertIn(
@@ -83,15 +85,27 @@ class HTTPRequestHandlerTestCase(unittest.TestCase):
         )
         req.close()
 
+    def _apply_patch(self, req, resp):
+        resp_patch = base64.b64decode(json.loads(resp[resp.find(b'{'):])['response']['patch'])
+        req_object = json.loads(req)['request']['object']
+        object = jsonpatch.apply_patch(req_object, resp_patch)
+        self.assertEqual(object['metadata']['labels']['k8s.osp.tech/global-cluster-location'], 'UNKNOWN')
+        return object
+
     def test_good_put_patch(self):
-        req = open("contrib/request.txt", "rb")
-        resp = open("contrib/response.txt", "rb")
-        self.assertIn(
-            resp.read(),
-            self._test(MockPUTRequest(b'/mutate', req.read()))
-        )
-        req.close()
-        resp.close()
+        req = open("contrib/request.txt", "rb").read()
+        resp = self._test(MockPUTRequest(b'/mutate', req))
+        object = self._apply_patch(req, resp)
+        self.assertEqual(object['metadata']['labels']['app'], 'scheduler-healthcheck-test-pod')
+
+    def test_good_put_patch_no_labels(self):
+        req = open("contrib/request.txt", "rb").read()
+        req_object = json.loads(req)
+        del req_object['request']['object']['metadata']['labels']
+        req = json.dumps(req_object).encode('utf-8')
+        resp = self._test(MockPUTRequest(b'/mutate', req))
+        self._apply_patch(req, resp)
+
 
     def test_bad_put(self):
         self.assertIn(
