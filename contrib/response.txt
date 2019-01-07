@@ -1,1 +1,1 @@
-{"response": {"uid": "64bcda5e-f304-11e8-8699-fa163e69c69a", "allowed": true, "patch": "W3sib3AiOiAiYWRkIiwgInBhdGgiOiAiL21ldGFkYXRhL2xhYmVscy9rOHMub3NwLnRlY2h+MWdsb2JhbC1jbHVzdGVyLWxvY2F0aW9uIiwgInZhbHVlIjogIlVOS05PV04ifV0=", "patchType": "JSONPatch"}}
+{"response": {"uid": "64bcda5e-f304-11e8-8699-fa163e69c69a", "allowed": true, "patch": "W3sib3AiOiAiYWRkIiwgInBhdGgiOiAiL21ldGFkYXRhL2xhYmVscyIsICJ2YWx1ZSI6IHsiazhzLm9zcC50ZWNofjFnbG9iYWwtY2x1c3Rlci1sb2NhdGlvbiI6ICJVTktOT1dOIn19XQ==", "patchType": "JSONPatch"}}

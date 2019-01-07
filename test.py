@@ -83,6 +83,14 @@ class HTTPRequestHandlerTestCase(unittest.TestCase):
         )
         req.close()
 
+    def test_good_put_nolabels(self):
+        req = open("contrib/request_nolabels.txt", "rb")
+        self.assertIn(
+            b'"uid": "64bcda5e-f304-11e8-8699-fa163e69c69a"',
+            self._test(MockPUTRequest(b'/mutate', req.read()))
+        )
+        req.close()
+
     def test_good_put_patch(self):
         req = open("contrib/request.txt", "rb")
         resp = open("contrib/response.txt", "rb")
