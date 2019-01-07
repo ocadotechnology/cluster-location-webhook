@@ -85,6 +85,12 @@ class HTTPRequestHandlerTestCase(unittest.TestCase):
         )
         req.close()
 
+    def _apply_patch(self, req, resp):
+        resp_patch = base64.b64decode(json.loads(resp[resp.find(b'{'):])['response']['patch'])
+        req_object = json.loads(req)['request']['object']
+        object = jsonpatch.apply_patch(req_object, resp_patch)
+        self.assertEqual(object['metadata']['labels']['k8s.osp.tech/global-cluster-location'], 'UNKNOWN')
+
     def test_good_put_patch(self):
         req = open("contrib/request.txt", "rb").read()
         desired_resp = open("contrib/response.txt", "rb").read()
@@ -93,9 +99,20 @@ class HTTPRequestHandlerTestCase(unittest.TestCase):
             desired_resp,
             resp,
         )
-        resp_patch = base64.b64decode(json.loads(resp[resp.find(b'{'):])['response']['patch'])
-        req_object = json.loads(req)['request']['object']
-        jsonpatch.apply_patch(req_object, resp_patch)
+        self._apply_patch(req, resp)
+
+    def test_good_put_patch_no_labels(self):
+        req = open("contrib/request.txt", "rb").read()
+        req_object = json.loads(req)
+        del req_object['request']['object']['metadata']['labels']
+        req = json.dumps(req_object).encode('utf-8')
+        desired_resp = open("contrib/response.txt", "rb").read()
+        resp = self._test(MockPUTRequest(b'/mutate', req))
+        self.assertIn(
+            desired_resp,
+            resp,
+        )
+        self._apply_patch(req, resp)
 
 
     def test_bad_put(self):
