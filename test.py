@@ -90,28 +90,20 @@ class HTTPRequestHandlerTestCase(unittest.TestCase):
         req_object = json.loads(req)['request']['object']
         object = jsonpatch.apply_patch(req_object, resp_patch)
         self.assertEqual(object['metadata']['labels']['k8s.osp.tech/global-cluster-location'], 'UNKNOWN')
+        return object
 
     def test_good_put_patch(self):
         req = open("contrib/request.txt", "rb").read()
-        desired_resp = open("contrib/response.txt", "rb").read()
         resp = self._test(MockPUTRequest(b'/mutate', req))
-        self.assertIn(
-            desired_resp,
-            resp,
-        )
-        self._apply_patch(req, resp)
+        object = self._apply_patch(req, resp)
+        self.assertEqual(object['metadata']['labels']['app'], 'scheduler-healthcheck-test-pod')
 
     def test_good_put_patch_no_labels(self):
         req = open("contrib/request.txt", "rb").read()
         req_object = json.loads(req)
         del req_object['request']['object']['metadata']['labels']
         req = json.dumps(req_object).encode('utf-8')
-        desired_resp = open("contrib/response.txt", "rb").read()
         resp = self._test(MockPUTRequest(b'/mutate', req))
-        self.assertIn(
-            desired_resp,
-            resp,
-        )
         self._apply_patch(req, resp)
 
 
